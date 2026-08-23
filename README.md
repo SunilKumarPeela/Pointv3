@@ -86,7 +86,7 @@ Point uses Windows security groups to control access.
 | `Point Users` | Open, import, search, view |
 | `Point Exporters` | Export results |
 | `Point Administrators` | Full access + export |
-
+```
 ## Setup
 ```
 **1. Get your account name**
