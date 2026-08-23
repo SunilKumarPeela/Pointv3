@@ -89,7 +89,9 @@ Point uses Windows security groups to control access.
 ```
 ## Setup
 ```
+```
 **1. Get your account name**
+
 ```powershell
 whoami
 ```
