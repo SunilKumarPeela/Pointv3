@@ -87,63 +87,129 @@ Point uses Windows security groups to control access.
 | `Point Exporters` | Export results |
 | `Point Administrators` | Full access + export |
 ```
-## Setup
-```
-```
-**1. Get your account name**
+## Add the Current Windows User
 
+### Option A — Standard Access (no export)
+
+Use this if the user should only open, import, search, and view — no export.
+
+1. Open the Windows Start menu.
+2. Search for:
+```
+   PowerShell
+```
+3. Right-click **Windows PowerShell** and select **Run as administrator**.
+4. Click **Yes** on the administrator prompt.
+5. Copy and paste this entire block:
 ```powershell
-whoami
+   New-LocalGroup -Name "Point Users" -ErrorAction SilentlyContinue
+
+   $currentUser = "$env:USERDOMAIN\$env:USERNAME"
+
+   Add-LocalGroupMember -Group "Point Users" -Member $currentUser
+
+   Write-Host "Added $currentUser to Point Users"
 ```
-
-**2. Open PowerShell as Administrator** → Start menu → search PowerShell → Run as administrator
-
-**3. Create the groups**
+6. Press **Enter**.
+7. Verify the account was added:
 ```powershell
-New-LocalGroup -Name "Point Users" -Description "Users authorized to run Point" -ErrorAction SilentlyContinue
-New-LocalGroup -Name "Point Exporters" -Description "Users authorized to export Point results" -ErrorAction SilentlyContinue
-New-LocalGroup -Name "Point Administrators" -Description "Administrators authorized for full Point access" -ErrorAction SilentlyContinue
+   Get-LocalGroupMember -Group "Point Users"
 ```
+8. Close Point, sign out of Windows, sign back in, and open Point.
 
-**4. Grant access** (replace `DESKTOP-1234\john` with your `whoami` output)
+---
 
-Standard access only:
+### Option B — Access + Export Permission
+
+Use this if the user also needs to export results.
+
+1. Open the Windows Start menu.
+2. Search for:
+```
+   PowerShell
+```
+3. Right-click **Windows PowerShell** and select **Run as administrator**.
+4. Click **Yes** on the administrator prompt.
+5. Copy and paste this entire block:
 ```powershell
-$PointUser = "DESKTOP-1234\john"
-Add-LocalGroupMember -Group "Point Users" -Member $PointUser
-```
+   New-LocalGroup -Name "Point Users" -ErrorAction SilentlyContinue
+   New-LocalGroup -Name "Point Exporters" -ErrorAction SilentlyContinue
 
-Access + export:
+   $currentUser = "$env:USERDOMAIN\$env:USERNAME"
+
+   Add-LocalGroupMember -Group "Point Users" -Member $currentUser
+   Add-LocalGroupMember -Group "Point Exporters" -Member $currentUser
+
+   Write-Host "Added $currentUser to Point Users and Point Exporters"
+```
+6. Press **Enter**.
+7. Verify the account was added:
 ```powershell
-$PointUser = "DESKTOP-1234\john"
-Add-LocalGroupMember -Group "Point Users" -Member $PointUser
-Add-LocalGroupMember -Group "Point Exporters" -Member $PointUser
+   Get-LocalGroupMember -Group "Point Users"
+   Get-LocalGroupMember -Group "Point Exporters"
 ```
+8. Close Point, sign out of Windows, sign back in, and open Point.
 
-Full admin:
+---
+
+### Option C — Administrator Access
+
+Use this for full access, including export, via the `Point Administrators` group.
+
+1. Open the Windows Start menu.
+2. Search for:
+```
+   PowerShell
+```
+3. Right-click **Windows PowerShell** and select **Run as administrator**.
+4. Click **Yes** on the administrator prompt.
+5. Copy and paste this entire block:
 ```powershell
-$PointUser = "DESKTOP-1234\john"
-Add-LocalGroupMember -Group "Point Administrators" -Member $PointUser
-```
+   New-LocalGroup -Name "Point Administrators" -ErrorAction SilentlyContinue
 
-**5. Verify**
+   $currentUser = "$env:USERDOMAIN\$env:USERNAME"
+
+   Add-LocalGroupMember -Group "Point Administrators" -Member $currentUser
+
+   Write-Host "Added $currentUser to Point Administrators"
+```
+6. Press **Enter**.
+7. Verify the account was added:
 ```powershell
-Get-LocalGroupMember -Group "Point Users"
-Get-LocalGroupMember -Group "Point Exporters"
-Get-LocalGroupMember -Group "Point Administrators"
+   Get-LocalGroupMember -Group "Point Administrators"
+```
+8. Close Point, sign out of Windows, sign back in, and open Point.
+
+---
+
+### If "Access denied" appears in PowerShell
+PowerShell was not opened as administrator. Close it and choose **Run as administrator**.
+
+### If `Add-LocalGroupMember` is unavailable
+
+Open Command Prompt as Administrator and run the commands for the role you need:
+
+**Standard access:**
+```cmd
+net localgroup "Point Users" /add
+net localgroup "Point Users" "%USERDOMAIN%\%USERNAME%" /add
 ```
 
-**6. Apply** — Close Point → Sign out → Sign back in → Reopen Point
-
-## Remove access
-```powershell
-$PointUser = "DESKTOP-1234\john"
-Remove-LocalGroupMember -Group "Point Users" -Member $PointUser
-Remove-LocalGroupMember -Group "Point Exporters" -Member $PointUser
-Remove-LocalGroupMember -Group "Point Administrators" -Member $PointUser
+**Access + export:**
+```cmd
+net localgroup "Point Users" /add
+net localgroup "Point Exporters" /add
+net localgroup "Point Users" "%USERDOMAIN%\%USERNAME%" /add
+net localgroup "Point Exporters" "%USERDOMAIN%\%USERNAME%" /add
 ```
-Sign out/in afterward.
 
+**Administrator:**
+```cmd
+net localgroup "Point Administrators" /add
+net localgroup "Point Administrators" "%USERDOMAIN%\%USERNAME%" /add
+```
+
+Then sign out and sign back in.
 ## Required config (`point-security.conf`, next to `Point.exe`)
 ```ini
 enforce_windows_groups=true
