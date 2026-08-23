@@ -1,4 +1,7 @@
 #include <windows.h>
+#include "resource.h"
+
+IDI_POINT_ICON ICON "point.ico"
 
 VS_VERSION_INFO VERSIONINFO
  FILEVERSION 8,15,5,0
