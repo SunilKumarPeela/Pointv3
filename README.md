@@ -88,7 +88,7 @@ Point uses Windows security groups to control access.
 | `Point Administrators` | Full access + export |
 
 ## Setup
-
+```
 **1. Get your account name**
 ```powershell
 whoami
