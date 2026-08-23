@@ -1,0 +1,14 @@
+Steps:
+
+1. Run Powershell as Administrator
+2. Copy and paste the following code 
+   
+   New-LocalGroup -Name "Point Users" -ErrorAction SilentlyContinue
+
+   $currentUser = "$env:USERDOMAIN\$env:USERNAME"
+
+   Add-LocalGroupMember -Group "Point Users" -Member $currentUser
+
+   Write-Host "Added $currentUser to Point Users"
+
+3. Signout and signin to your windows acccounr
