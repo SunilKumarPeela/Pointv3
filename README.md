@@ -75,6 +75,86 @@ Point is built to align with **NIST CSF 2.0**, **PCI DSS 4.0.1**, and **GDPR** t
 │   └── resource.h              # Resource header definitions
 └── tests/
     └── schema_mapping_test.cpp # Regression tests for core schema indexing and joins
+# Point Windows Access Configuration
+
+Point uses Windows security groups to control access.
+
+| Group | Permissions |
+|---|---|
+| `Point Users` | Open, import, search, view |
+| `Point Exporters` | Export results |
+| `Point Administrators` | Full access + export |
+
+## Setup
+
+**1. Get your account name**
+```powershell
+whoami
+```
+
+**2. Open PowerShell as Administrator** → Start menu → search PowerShell → Run as administrator
+
+**3. Create the groups**
+```powershell
+New-LocalGroup -Name "Point Users" -Description "Users authorized to run Point" -ErrorAction SilentlyContinue
+New-LocalGroup -Name "Point Exporters" -Description "Users authorized to export Point results" -ErrorAction SilentlyContinue
+New-LocalGroup -Name "Point Administrators" -Description "Administrators authorized for full Point access" -ErrorAction SilentlyContinue
+```
+
+**4. Grant access** (replace `DESKTOP-1234\john` with your `whoami` output)
+
+Standard access only:
+```powershell
+$PointUser = "DESKTOP-1234\john"
+Add-LocalGroupMember -Group "Point Users" -Member $PointUser
+```
+
+Access + export:
+```powershell
+$PointUser = "DESKTOP-1234\john"
+Add-LocalGroupMember -Group "Point Users" -Member $PointUser
+Add-LocalGroupMember -Group "Point Exporters" -Member $PointUser
+```
+
+Full admin:
+```powershell
+$PointUser = "DESKTOP-1234\john"
+Add-LocalGroupMember -Group "Point Administrators" -Member $PointUser
+```
+
+**5. Verify**
+```powershell
+Get-LocalGroupMember -Group "Point Users"
+Get-LocalGroupMember -Group "Point Exporters"
+Get-LocalGroupMember -Group "Point Administrators"
+```
+
+**6. Apply** — Close Point → Sign out → Sign back in → Reopen Point
+
+## Remove access
+```powershell
+$PointUser = "DESKTOP-1234\john"
+Remove-LocalGroupMember -Group "Point Users" -Member $PointUser
+Remove-LocalGroupMember -Group "Point Exporters" -Member $PointUser
+Remove-LocalGroupMember -Group "Point Administrators" -Member $PointUser
+```
+Sign out/in afterward.
+
+## Required config (`point-security.conf`, next to `Point.exe`)
+```ini
+enforce_windows_groups=true
+allowed_windows_groups=Point Users;Point Administrators
+export_windows_groups=Point Exporters;Point Administrators
+export_retention_days=30
+workspace_retention_days=30
+log_retention_days=365
+```
+
+## Troubleshooting
+- **Access Denied** → reopen PowerShell as Administrator
+- **User still unauthorized** → verify group membership, then sign out/in
+- **Group already exists** → safe to ignore, `-ErrorAction SilentlyContinue` handles it
+- **Company-managed devices** → don't change groups yourself; contact IT/security
 ```
 ##Copyright
 ```
