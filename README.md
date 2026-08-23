@@ -75,7 +75,9 @@ Point is built to align with **NIST CSF 2.0**, **PCI DSS 4.0.1**, and **GDPR** t
 │   └── resource.h              # Resource header definitions
 └── tests/
     └── schema_mapping_test.cpp # Regression tests for core schema indexing and joins
+```
 # Point Windows Access Configuration
+```
 
 Point uses Windows security groups to control access.
 
